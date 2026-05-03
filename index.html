@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Diagnóstico de Recuperação Tributária</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #1a3a5c;
+      --primary-dark: #122840;
+      --accent: #c9a84c;
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --text: #1e2d3d;
+      --muted: #6b7c93;
+      --border: #d1dce8;
+      --success: #1a6e34;
+      --danger: #b83228;
+      --radius: 12px;
+      --shadow: 0 8px 40px rgba(26,58,92,0.13);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ══ TELAS ══ */
+    .tela { display: none; }
+    .tela.ativa {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ══ BOAS-VINDAS ══ */
+    #tela-boas-vindas {
+      min-height: 100vh;
+      justify-content: center;
+      padding: 40px 20px;
+      background: linear-gradient(145deg, var(--primary-dark) 0%, var(--primary) 60%, #2a5a8c 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #tela-boas-vindas::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.07);
+      top: -200px; right: -150px;
+      pointer-events: none;
+    }
+
+    #tela-boas-vindas::after {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.05);
+      bottom: -100px; left: -100px;
+      pointer-events: none;
+    }
+
+    .bv-inner {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 620px;
+      width: 100%;
+    }
+
+    .bv-logo {
+      width: 68px; height: 68px;
+      background: linear-gradient(135deg, var(--accent), #e8c870);
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 28px;
+      font-size: 30px;
+      box-shadow: 0 8px 28px rgba(201,168,76,0.38);
+    }
+
+    .bv-badge {
+      display: inline-block;
+      background: rgba(201,168,76,0.15);
+      border: 1px solid rgba(201,168,76,0.32);
+      color: var(--accent);
+      font-size: 0.71rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 5px 18px;
+      border-radius: 999px;
+      margin-bottom: 22px;
+    }
+
+    .bv-inner h1 {
+      font-size: clamp(1.75rem, 5vw, 2.7rem);
+      color: #fff;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 18px;
+    }
+
+    .bv-inner h1 span { color: var(--accent); }
+
+    .bv-sub {
+      font-size: 1.02rem;
+      color: rgba(255,255,255,0.70);
+      line-height: 1.72;
+      margin-bottom: 36px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .bv-features {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .bv-feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.58);
+    }
+
+    .bv-feature .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .btn-iniciar {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--accent), #e8c870);
+      color: var(--primary-dark);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 16px 48px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 8px 28px rgba(201,168,76,0.42);
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-iniciar:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 38px rgba(201,168,76,0.52);
+    }
+
+    .bv-disclaimer {
+      margin-top: 22px;
+      font-size: 0.74rem;
+      color: rgba(255,255,255,0.32);
+    }
+
+    /* ══ FORMULÁRIO ══ */
+    #tela-formulario {
+      min-height: 100vh;
+      padding: 40px 16px 80px;
+    }
+
+    .form-topbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.77rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 22px;
+      max-width: 660px;
+      width: 100%;
+    }
+
+    .dot-gold {
+      width: 9px; height: 9px;
+      background: var(--accent);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .progress-wrap {
+      width: 100%;
+      max-width: 660px;
+      margin-bottom: 22px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.77rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .progress-bar {
+      height: 5px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 999px;
+      transition: width 0.55s cubic-bezier(.4,0,.2,1);
+      width: 10%;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 40px 44px;
+      width: 100%;
+      max-width: 660px;
+      border-top: 4px solid var(--accent);
+    }
+
+    /* ══ STEPS ══ */
+    .step { display: none; }
+    .step.ativo {
+      display: block;
+      animation: fadeUp 0.28s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-tag {
+      font-size: 0.70rem;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .step h2 {
+      font-size: 1.16rem;
+      color: var(--primary);
+      font-weight: 700;
+      line-height: 1.35;
+      margin-bottom: 6px;
+    }
+
+    .step .hint {
+      font-size: 0.83rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.55;
+    }
+
+    /* ══ INPUTS ══ */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+
+    .input-group label {
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .input-group label .req { color: var(--accent); margin-left: 2px; }
+    .input-group label .opt {
+      font-size: 0.74rem;
+      color: var(--muted);
+      font-weight: 400;
+      margin-left: 4px;
+    }
+
+    .field-input {
+      padding: 13px 16px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.94rem;
+      color: var(--text);
+      background: #fafbfc;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .field-input:focus { border-color: var(--primary); background: #fff; }
+    .field-input.erro { border-color: var(--danger); }
+
+    .field-error {
+      font-size: 0.76rem;
+      color: var(--danger);
+      display: none;
+    }
+
+    .field-error.visivel { display: block; }
+
+    /* ══ OPÇÕES ══ */
+    .options { display: flex; flex-direction: column; gap: 11px; }
+
+    .option-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background: #fafbfc;
+      cursor: pointer;
+      font-size: 0.92rem;
+      color: var(--text);
+      text-align: left;
+      transition: border-color 0.18s, background 0.18s, transform 0.12s;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .option-btn:hover {
+      border-color: var(--accent);
+      background: #fdf8ee;
+      transform: translateY(-1px);
+    }
+
+    .option-btn.sel {
+      border-color: var(--primary);
+      background: #eaf0f8;
+    }
+
+    .opt-radio {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.18s;
+    }
+
+    .option-btn.sel .opt-radio {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .option-btn.sel .opt-radio::after {
+      content: '';
+      width: 7px; height: 7px;
+      background: #fff;
+      border-radius: 50%;
+      display: block;
+    }
+
+    /* ══ ESCALA ══ */
+    .scale-wrap { display: flex; flex-direction: column; gap: 12px; }
+    .scale-buttons { display: flex; gap: 7px; flex-wrap: wrap; }
+
+    .scale-btn {
+      width: 46px; height: 46px;
+      border-radius: 9px;
+      border: 2px solid var(--border);
+      background: #fafbfc;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text);
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .scale-btn:hover { border-color: var(--accent); background: #fdf8ee; }
+    .scale-btn.sl { border-color: #9baab7; background: #eef1f4; color: #5a6a7a; }
+    .scale-btn.sw { border-color: #d97706; background: #fef3e2; color: #b45309; }
+    .scale-btn.sh { border-color: var(--success); background: #e8f5ee; color: var(--success); }
+
+    .scale-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.73rem;
+      color: var(--muted);
+    }
+
+    /* ══ BLOCOS CONDICIONAIS ══ */
+    .bloco-cond { display: none; }
+    .bloco-cond.visivel { display: block; }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
+
+    .sub-titulo {
+      font-size: 1.05rem;
+      color: var(--primary);
+      font-weight: 700;
+      line-height: 1.35;
+      margin-bottom: 6px;
+    }
+
+    /* ══ NAVEGAÇÃO ══ */
+    .nav-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.18s, transform 0.12s;
+      font-family: inherit;
+    }
+
+    .btn:hover { opacity: 0.87; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(26,58,92,0.22);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* ══ DESQUALIFICADO ══ */
+    .disc-inner { text-align: center; padding: 20px 0; }
+    .disc-icon { font-size: 2.8rem; margin-bottom: 16px; }
+
+    /* ══ LOADING ══ */
+    #loading {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(18,40,64,0.78);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    #loading.ativo { display: flex; }
+
+    .spinner {
+      width: 46px; height: 46px;
+      border: 4px solid rgba(255,255,255,0.15);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loading p { color: rgba(255,255,255,0.68); font-size: 0.9rem; }
+
+    /* ══ ENCERRAMENTO ══ */
+    #tela-encerramento {
+      min-height: 100vh;
+      justify-content: center;
+      padding: 40px 20px;
+      background: linear-gradient(145deg, var(--primary-dark) 0%, var(--primary) 60%, #2a5a8c 100%);
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    #tela-encerramento::before {
+      content: '';
+      position: absolute;
+      width: 520px; height: 520px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.07);
+      top: -180px; right: -100px;
+      pointer-events: none;
+    }
+
+    .enc-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 540px;
+      width: 100%;
+    }
+
+    .enc-check {
+      width: 84px; height: 84px;
+      background: linear-gradient(135deg, var(--accent), #e8c870);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 30px;
+      font-size: 38px;
+      box-shadow: 0 10px 36px rgba(201,168,76,0.44);
+      animation: popIn 0.55s cubic-bezier(.175,.885,.32,1.275);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .enc-inner h2 {
+      font-size: clamp(1.55rem, 4vw, 2.2rem);
+      color: #fff;
+      font-weight: 800;
+      margin-bottom: 18px;
+      line-height: 1.2;
+    }
+
+    .enc-msg {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.73);
+      line-height: 1.78;
+      margin-bottom: 32px;
+    }
+
+    .enc-msg strong { color: var(--accent); }
+
+    .enc-privacy {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 10px;
+      padding: 12px 22px;
+      font-size: 0.81rem;
+      color: rgba(255,255,255,0.48);
+      margin-bottom: 34px;
+    }
+
+    .btn-obrigado {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--accent), #e8c870);
+      color: var(--primary-dark);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 16px 48px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 8px 28px rgba(201,168,76,0.42);
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-obrigado:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 38px rgba(201,168,76,0.52);
+    }
+
+    /* ══ RESPONSIVO ══ */
+    @media (max-width: 560px) {
+      .card { padding: 26px 18px; }
+      .scale-btn { width: 38px; height: 38px; font-size: 0.82rem; }
+      .bv-features { flex-direction: column; align-items: center; gap: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p>Enviando suas respostas…</p>
+</div>
+
+<!-- ════════════════════════════
+     TELA 1 — BOAS-VINDAS
+════════════════════════════ -->
+<div id="tela-boas-vindas" class="tela ativa">
+  <div class="bv-inner">
+    <div class="bv-logo">⚖️</div>
+    <div class="bv-badge">Diagnóstico Tributário Gratuito</div>
+    <h1>Quanto sua empresa pode <span>recuperar</span> em tributos?</h1>
+    <p class="bv-sub">Responda de 1 a 7 perguntas e descubra quais teses tributárias se aplicam ao seu perfil — e quanto sua empresa pode recuperar.</p>
+    <div class="bv-features">
+      <div class="bv-feature"><span class="dot"></span>100% gratuito e sem compromisso</div>
+      <div class="bv-feature"><span class="dot"></span>Resultado em menos de 3 minutos</div>
+      <div class="bv-feature"><span class="dot"></span>Avaliação por especialistas</div>
+    </div>
+    <button class="btn-iniciar" onclick="iniciar()">Iniciar Diagnóstico →</button>
+    <p class="bv-disclaimer">Seus dados são protegidos e utilizados exclusivamente para fins de diagnóstico.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     TELA 2 — FORMULÁRIO
+════════════════════════════ -->
+<div id="tela-formulario" class="tela">
+
+  <div class="form-topbar">
+    <span class="dot-gold"></span>
+    Diagnóstico Tributário
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span id="prog-label">Identificação</span>
+      <span id="prog-pct">10%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="prog-fill"></div>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <!-- STEP 0 — Contato -->
+    <div class="step ativo" id="s0">
+      <div class="step-tag">Etapa 1 · Identificação</div>
+      <h2>Antes de começar, precisamos de algumas informações</h2>
+      <p class="hint">Seus dados serão utilizados exclusivamente para que nossa equipe entre em contato com os resultados do diagnóstico.</p>
+
+      <div class="input-group">
+        <label for="f-nome">Nome completo<span class="req"> *</span></label>
+        <input class="field-input" type="text" id="f-nome" placeholder="Ex.: João da Silva" autocomplete="name"/>
+        <span class="field-error" id="e-nome">Por favor, informe seu nome completo.</span>
+      </div>
+
+      <div class="input-group">
+        <label for="f-wpp">WhatsApp<span class="req"> *</span></label>
+        <input class="field-input" type="tel" id="f-wpp" placeholder="(11) 99999-9999" autocomplete="tel"/>
+        <span class="field-error" id="e-wpp">Por favor, informe um número de WhatsApp válido (mínimo 10 dígitos).</span>
+      </div>
+
+      <div class="input-group">
+        <label for="f-email">E-mail<span class="opt"> (opcional)</span></label>
+        <input class="field-input" type="email" id="f-email" placeholder="seu@email.com" autocomplete="email"/>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-primary" onclick="avancarS0()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 1 — Natureza Jurídica -->
+    <div class="step" id="s1">
+      <div class="step-tag">Etapa 2 · Qualificação Inicial</div>
+      <h2>Qual é a natureza jurídica do seu negócio?</h2>
+      <p class="hint">Essa informação determina quais categorias de teses são estruturalmente aplicáveis ao seu caso.</p>
+      <div class="options">
+        <button class="option-btn" data-val="PF" onclick="pick(this,'natureza')">
+          <span class="opt-radio"></span>Pessoa Física — Autônomo / Profissional Liberal
+        </button>
+        <button class="option-btn" data-val="ME" onclick="pick(this,'natureza')">
+          <span class="opt-radio"></span>Microempresa ou EPP
+        </button>
+        <button class="option-btn" data-val="MG" onclick="pick(this,'natureza')">
+          <span class="opt-radio"></span>Empresa de Médio ou Grande Porte
+        </button>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="ir('s0',10,'Identificação')">← Voltar</button>
+        <button class="btn btn-primary" onclick="avancarS1()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 1B — Nome da Empresa -->
+    <div class="step" id="s1b">
+      <div class="step-tag">Etapa 2 · Qualificação Inicial</div>
+      <h2>Qual é o nome da sua empresa?</h2>
+      <p class="hint">Informe a razão social ou o nome fantasia pelo qual a empresa é conhecida.</p>
+      <div class="input-group">
+        <label for="f-empresa">Nome da empresa<span class="req"> *</span></label>
+        <input class="field-input" type="text" id="f-empresa" placeholder="Ex.: Comércio Silva Ltda."/>
+        <span class="field-error" id="e-empresa">Por favor, informe o nome da empresa.</span>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="ir('s1',22,'Qualificação Inicial')">← Voltar</button>
+        <button class="btn btn-primary" onclick="avancarS1B()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 — Insatisfação -->
+    <div class="step" id="s2">
+      <div class="step-tag">Etapa 3 · Nível de Insatisfação</div>
+      <h2>Qual é o seu nível de insatisfação com a carga tributária atual?</h2>
+      <p class="hint">Em uma escala de 1 (nenhuma insatisfação) a 10 (situação crítica).</p>
+      <div class="scale-wrap">
+        <div class="scale-buttons" id="scale-btns"></div>
+        <div class="scale-legend">
+          <span>1 — Nenhuma insatisfação</span>
+          <span>10 — Situação crítica</span>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="ir('s1b',32,'Dados da Empresa')">← Voltar</button>
+        <button class="btn btn-primary" onclick="avancarS2()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 — Regime Tributário -->
+    <div class="step" id="s3">
+      <div class="step-tag">Etapa 4 · Regime Tributário</div>
+      <h2>Qual é o regime tributário da sua empresa?</h2>
+      <p class="hint">O regime define quais teses são estruturalmente elegíveis ao seu perfil.</p>
+      <div class="options">
+        <button class="option-btn" data-val="SN" onclick="pick(this,'regime')">
+          <span class="opt-radio"></span>Simples Nacional
+        </button>
+        <button class="option-btn" data-val="LP" onclick="pick(this,'regime')">
+          <span class="opt-radio"></span>Lucro Presumido
+        </button>
+        <button class="option-btn" data-val="LR" onclick="pick(this,'regime')">
+          <span class="opt-radio"></span>Lucro Real
+        </button>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="ir('s2',42,'Nível de Insatisfação')">← Voltar</button>
+        <button class="btn btn-primary" onclick="avancarS3()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4 — Setor -->
+    <div class="step" id="s4">
+      <div class="step-tag">Etapa 5 · Setor de Atuação</div>
+      <h2>Qual é o principal setor de atuação da sua empresa?</h2>
+      <p class="hint">O setor confirma e refina as teses aplicáveis ao seu perfil específico.</p>
+      <div class="options">
+        <button class="option-btn" data-val="COM" onclick="pick(this,'setor')">
+          <span class="opt-radio"></span>Comércio — Varejo / Distribuição
+        </button>
+        <button class="option-btn" data-val="IND" onclick="pick(this,'setor')">
+          <span class="opt-radio"></span>Indústria / Manufatura
+        </button>
+        <button class="option-btn" data-val="CON" onclick="pick(this,'setor')">
+          <span class="opt-radio"></span>Construção Civil
+        </button>
+        <button class="option-btn" data-val="SRV" onclick="pick(this,'setor')">
+          <span class="opt-radio"></span>Prestação de Serviços
+        </button>
+        <button class="option-btn" data-val="SAU" onclick="pick(this,'setor')">
+          <span class="opt-radio"></span>Saúde — Clínicas / Consultórios
+        </button>
+        <button class="option-btn" data-val="AGR" onclick="pick(this,'setor')">
+          <span class="opt-radio"></span>Agronegócio
+        </button>
+        <button class="option-btn" data-val="OUT" onclick="pick(this,'setor')">
+          <span class="opt-radio"></span>Outro
+        </button>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="voltarS4()">← Voltar</button>
+        <button class="btn btn-primary" onclick="avancarS4()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5A — Faturamento (LP, exceto Saúde) -->
+    <div class="step" id="s5a">
+      <div class="step-tag">Etapa 6 · Perguntas Condicionais</div>
+      <h2>Qual foi o faturamento bruto aproximado da empresa no último ano?</h2>
+      <p class="hint">Necessário para verificar a aplicabilidade da Tese 2 ao seu perfil.</p>
+      <div class="options">
+        <button class="option-btn" data-val="ATE5" onclick="pick(this,'faturamento')">
+          <span class="opt-radio"></span>Até R$ 5 milhões
+        </button>
+        <button class="option-btn" data-val="ACIMA5" onclick="pick(this,'faturamento')">
+          <span class="opt-radio"></span>Acima de R$ 5 milhões
+        </button>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="ir('s4',70,'Setor de Atuação')">← Voltar</button>
+        <button class="btn btn-primary" onclick="enviar()">Concluir →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5B — Simples Nacional -->
+    <div class="step" id="s5b">
+      <div class="step-tag">Etapa 6 · Perguntas Condicionais</div>
+      <h2>Sua empresa distribui lucros aos sócios ou proprietários?</h2>
+      <p class="hint">A distribuição de lucros é condição para aplicação da Tese 1 no Simples Nacional.</p>
+      <div class="options">
+        <button class="option-btn" data-val="SIM" onclick="pick(this,'distribuiLucros')">
+          <span class="opt-radio"></span>Sim, distribui lucros
+        </button>
+        <button class="option-btn" data-val="NAO" onclick="pick(this,'distribuiLucros')">
+          <span class="opt-radio"></span>Não distribui lucros
+        </button>
+      </div>
+
+      <div class="bloco-cond" id="bloco-rural-sn">
+        <div class="divider"></div>
+        <p class="sub-titulo">É produtor rural pessoa física com empregados?</p>
+        <p class="hint">Confirmação necessária para a Tese 5 — Salário Educação Produtor Rural PF.</p>
+        <div class="options">
+          <button class="option-btn" data-val="SIM" onclick="pick(this,'produtorRural')">
+            <span class="opt-radio"></span>Sim
+          </button>
+          <button class="option-btn" data-val="NAO" onclick="pick(this,'produtorRural')">
+            <span class="opt-radio"></span>Não
+          </button>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="ir('s4',70,'Setor de Atuação')">← Voltar</button>
+        <button class="btn btn-primary" onclick="enviar()">Concluir →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5CDE — Lucro Real -->
+    <div class="step" id="s5cde">
+      <div class="step-tag">Etapa 6 · Perguntas Condicionais</div>
+
+      <h2>Sua empresa realiza operações interestaduais ou está sujeita a ICMS-ST / DIFAL?</h2>
+      <p class="hint">Confirma a aplicabilidade das Teses 10 e 11.</p>
+      <div class="options">
+        <button class="option-btn" data-val="SIM" onclick="pick(this,'interestaduais')">
+          <span class="opt-radio"></span>Sim, frequentemente
+        </button>
+        <button class="option-btn" data-val="OCL" onclick="pick(this,'interestaduais')">
+          <span class="opt-radio"></span>Ocasionalmente
+        </button>
+        <button class="option-btn" data-val="NAO" onclick="pick(this,'interestaduais')">
+          <span class="opt-radio"></span>Não
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <p class="sub-titulo">Sua empresa realiza pesquisa e desenvolvimento tecnológico ou inovação?</p>
+      <p class="hint">Confirma a aplicabilidade da Tese 16 — Lei do Bem.</p>
+      <div class="options">
+        <button class="option-btn" data-val="SIM" onclick="pick(this,'pd')">
+          <span class="opt-radio"></span>Sim
+        </button>
+        <button class="option-btn" data-val="NAO" onclick="pick(this,'pd')">
+          <span class="opt-radio"></span>Não
+        </button>
+      </div>
+
+      <div class="bloco-cond" id="bloco-combustivel">
+        <div class="divider"></div>
+        <p class="sub-titulo">Sua empresa é distribuidora de combustíveis?</p>
+        <p class="hint">Necessário para verificar a Tese 17 — Créditos PIS/COFINS Diesel.</p>
+        <div class="options">
+          <button class="option-btn" data-val="SIM" onclick="pick(this,'combustivel')">
+            <span class="opt-radio"></span>Sim — posto de gasolina ou distribuidor atacadista
+          </button>
+          <button class="option-btn" data-val="NAO" onclick="pick(this,'combustivel')">
+            <span class="opt-radio"></span>Não
+          </button>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="ir('s4',70,'Setor de Atuação')">← Voltar</button>
+        <button class="btn btn-primary" onclick="enviar()">Concluir →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5F — Saúde + LP -->
+    <div class="step" id="s5f">
+      <div class="step-tag">Etapa 6 · Perguntas Condicionais</div>
+
+      <h2>Qual foi o faturamento bruto aproximado da empresa no último ano?</h2>
+      <p class="hint">Necessário para confirmar a aplicabilidade da Tese 2.</p>
+      <div class="options">
+        <button class="option-btn" data-val="ATE5" onclick="pick(this,'faturamento')">
+          <span class="opt-radio"></span>Até R$ 5 milhões
+        </button>
+        <button class="option-btn" data-val="ACIMA5" onclick="pick(this,'faturamento')">
+          <span class="opt-radio"></span>Acima de R$ 5 milhões
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <p class="sub-titulo">O estabelecimento é uma clínica médica ou consultório odontológico?</p>
+      <p class="hint">Confirma a Tese 18 — IRPJ/CSLL para Clínicas Médicas e Odontológicas.</p>
+      <div class="options">
+        <button class="option-btn" data-val="SIM" onclick="pick(this,'clinica')">
+          <span class="opt-radio"></span>Sim
+        </button>
+        <button class="option-btn" data-val="NAO" onclick="pick(this,'clinica')">
+          <span class="opt-radio"></span>Não
+        </button>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="ir('s4',70,'Setor de Atuação')">← Voltar</button>
+        <button class="btn btn-primary" onclick="enviar()">Concluir →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5G — PF + Agronegócio -->
+    <div class="step" id="s5g">
+      <div class="step-tag">Etapa 3 · Perguntas Condicionais</div>
+      <h2>Você é produtor rural pessoa física que emprega trabalhadores?</h2>
+      <p class="hint">Confirmação necessária para a Tese 5 — Salário Educação Produtor Rural PF.</p>
+      <div class="options">
+        <button class="option-btn" data-val="SIM" onclick="pick(this,'produtorRural')">
+          <span class="opt-radio"></span>Sim, sou produtor rural com empregados
+        </button>
+        <button class="option-btn" data-val="NAO" onclick="pick(this,'produtorRural')">
+          <span class="opt-radio"></span>Não
+        </button>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="ir('s4',70,'Setor de Atuação')">← Voltar</button>
+        <button class="btn btn-primary" onclick="enviar()">Concluir →</button>
+      </div>
+    </div>
+
+    <!-- DESQUALIFICADO -->
+    <div class="step" id="s-disc">
+      <div class="disc-inner">
+        <div class="disc-icon">🔍</div>
+        <h2 style="margin-bottom:12px;">Obrigado pela resposta</h2>
+        <p style="color:var(--muted);font-size:0.93rem;line-height:1.68;max-width:400px;margin:0 auto 26px;">
+          Com base no nível de insatisfação tributária informado, neste momento o potencial de engajamento é reduzido. Caso sua situação mude, estamos à disposição para um novo diagnóstico.
+        </p>
+        <button class="btn btn-primary" onclick="reiniciar()">Reiniciar Diagnóstico</button>
+      </div>
+    </div>
+
+  </div><!-- /card -->
+</div><!-- /tela-formulario -->
+
+<!-- ════════════════════════════
+     TELA 3 — ENCERRAMENTO
+════════════════════════════ -->
+<div id="tela-encerramento" class="tela">
+  <div class="enc-inner">
+    <div class="enc-check">✓</div>
+    <h2>Diagnóstico Concluído</h2>
+    <p class="enc-msg">
+      Com base no seu perfil, identificamos <strong>oportunidades reais de recuperação tributária</strong> para a sua empresa.
+      Nosso time entrará em contato pelo <strong>WhatsApp informado</strong> para agendar uma avaliação detalhada sem custo.
+    </p>
+    <div class="enc-privacy">
+      🔒 Seus dados estão protegidos e serão utilizados somente para contato.
+    </div>
+    <br/>
+    <button class="btn-obrigado" onclick="reiniciar()">Obrigado ✓</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     JAVASCRIPT
+════════════════════════════ -->
+<script>
+  // ── ENDPOINT ──────────────────────────────────
+  const ENDPOINT = 'https://script.google.com/macros/s/AKfycbwlKZExSgaiavIg5Ily55kaZzJRGKKppshJK8azRDCKfrm4nOeWB2UslZy9jBxJVAwLKg/exec';
+
+  // ── ESTADO ────────────────────────────────────
+  const D = {
+    nome:'', whatsapp:'', email:'', empresa:'',
+    natureza:null, insatisfacao:null,
+    regime:null, setor:null,
+    faturamento:null, distribuiLucros:null, produtorRural:null,
+    interestaduais:null, pd:null, combustivel:null, clinica:null
+  };
+
+  // ── CATÁLOGO DE TESES ─────────────────────────
+  const TESES = {
+    1: 'Adicional 10% — Lucro Distribuído > R$ 50k/mês (Simples Nacional)',
+    2: 'Adicional 10% — Presunção de Faturamento > R$ 5M (Lucro Presumido)',
+    3: 'INSS Acima do Teto — Pessoa Física Autônoma / Profissional Liberal',
+    4: 'ICMS-ST — Portaria CAT 42/SP (Operações em SP sujeitas a ST)',
+    5: 'Salário Educação — Produtor Rural Pessoa Física com Empregados',
+    6: 'Créditos PIS/COFINS — Construção Civil',
+    7: 'Simples Nacional Monofásico — Combustíveis, Energia, Bebidas, Cigarros',
+    8: 'Exclusão do ICMS da Base de Cálculo do PIS/COFINS (Lucro Real)',
+    9: 'Exclusão do ISSQN da Base de Cálculo do PIS/COFINS (Lucro Real)',
+    10:'Exclusão do ICMS-ST e DIFAL da Base do PIS/COFINS',
+    11:'Exclusão de Créditos Presumidos de ICMS da Base do PIS/COFINS',
+    12:'Créditos PIS/COFINS — Insumos Não-Cumulativos (Lucro Real)',
+    13:'Verbas Indenizatórias — Exclusão da Base de Cálculo do INSS',
+    14:'IRPJ/CSLL — JSCP Extemporâneo',
+    15:'IRPJ/CSLL — Subvenções de ICMS até 2023',
+    16:'IRPJ/CSLL — Lei do Bem (P&D e Inovação Tecnológica)',
+    17:'Créditos PIS/COFINS Diesel — Distribuidoras de Combustíveis',
+    18:'IRPJ/CSLL — Clínicas Médicas e Consultórios Odontológicos',
+    19:'Créditos Presumidos PIS/COFINS — Agronegócio',
+    20:'Créditos Escriturais de IPI — Indústria'
+  };
+
+  // ── CONTROLE DE TELAS ─────────────────────────
+  function mostrarTela(id) {
+    document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+    document.getElementById(id).classList.add('ativa');
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  function iniciar() {
+    mostrarTela('tela-formulario');
+    ir('s0', 10, 'Identificação');
+  }
+
+  // ── CONTROLE DE STEPS ─────────────────────────
+  function ir(stepId, pct, label) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('ativo'));
+    document.getElementById(stepId).classList.add('ativo');
+    document.getElementById('prog-fill').style.width = pct + '%';
+    document.getElementById('prog-pct').textContent = pct + '%';
+    document.getElementById('prog-label').textContent = label;
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  // ── ESCALA ────────────────────────────────────
+  (function buildScale() {
+    const wrap = document.getElementById('scale-btns');
+    for (let i = 1; i <= 10; i++) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'scale-btn';
+      b.textContent = i;
+      b.dataset.val = i;
+      b.onclick = function() {
+        document.querySelectorAll('.scale-btn')
+          .forEach(x => x.classList.remove('sl','sw','sh'));
+        const v = parseInt(this.dataset.val);
+        D.insatisfacao = v;
+        this.classList.add(v <= 3 ? 'sl' : v <= 6 ? 'sw' : 'sh');
+      };
+      wrap.appendChild(b);
+    }
+  })();
+
+  // ── SELEÇÃO DE OPÇÕES ─────────────────────────
+  function pick(btn, campo) {
+    btn.closest('.options').querySelectorAll('.option-btn')
+      .forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    D[campo] = btn.dataset.val;
+
+    // Bloco rural no SN (Agronegócio)
+    if (campo === 'setor') {
+      const rural = document.getElementById('bloco-rural-sn');
+      if (rural) rural.classList.toggle('visivel', D.setor === 'AGR');
+      const comb = document.getElementById('bloco-combustivel');
+      if (comb) comb.classList.toggle('visivel', D.setor === 'COM');
+    }
+  }
+
+  // ── VALIDAÇÕES ────────────────────────────────
+  function setErro(inputId, errId, show) {
+    document.getElementById(inputId).classList.toggle('erro', show);
+    document.getElementById(errId).classList.toggle('visivel', show);
+  }
+
+  // ── NAVEGAÇÃO ─────────────────────────────────
+  function avancarS0() {
+    const nome = document.getElementById('f-nome').value.trim();
+    const wpp  = document.getElementById('f-wpp').value.trim();
+    let ok = true;
+    if (!nome) { setErro('f-nome','e-nome',true); ok=false; }
+    else setErro('f-nome','e-nome',false);
+    if (!wpp || wpp.replace(/\D/g,'').length < 10) {
+      setErro('f-wpp','e-wpp',true); ok=false;
+    } else setErro('f-wpp','e-wpp',false);
+    if (!ok) return;
+    D.nome = nome;
+    D.whatsapp = wpp;
+    D.email = document.getElementById('f-email').value.trim();
+    ir('s1', 22, 'Qualificação Inicial');
+  }
+
+  function avancarS1() {
+    if (!D.natureza) { alert('Por favor, selecione uma opção.'); return; }
+    // Pessoa Física pula empresa, insatisfação e regime — vai direto ao setor
+    if (D.natureza === 'PF') {
+      ir('s4', 70, 'Setor de Atuação');
+    } else {
+      ir('s1b', 32, 'Dados da Empresa');
+    }
+  }
+
+  function avancarS1B() {
+    const emp = document.getElementById('f-empresa').value.trim();
+    if (!emp) { setErro('f-empresa','e-empresa',true); return; }
+    setErro('f-empresa','e-empresa',false);
+    D.empresa = emp;
+    ir('s2', 42, 'Nível de Insatisfação');
+  }
+
+  function avancarS2() {
+    if (!D.insatisfacao) { alert('Por favor, selecione um valor na escala.'); return; }
+    if (D.insatisfacao <= 3) {
+      ir('s-disc', 30, 'Encerrado');
+    } else {
+      ir('s3', 56, 'Regime Tributário');
+    }
+  }
+
+  function avancarS3() {
+    if (!D.regime) { alert('Por favor, selecione o regime tributário.'); return; }
+    ir('s4', 70, 'Setor de Atuação');
+  }
+
+  function voltarS4() {
+    if (D.natureza === 'PF') ir('s1', 22, 'Qualificação Inicial');
+    else ir('s3', 56, 'Regime Tributário');
+  }
+
+  function avancarS4() {
+    if (!D.setor) { alert('Por favor, selecione o setor de atuação.'); return; }
+
+    // Pessoa Física
+    if (D.natureza === 'PF') {
+      if (D.setor === 'AGR') ir('s5g', 86, 'Perguntas Condicionais');
+      else enviar(); // PF não-agronegócio finaliza direto
+      return;
+    }
+
+    // Simples Nacional
+    if (D.regime === 'SN') {
+      document.getElementById('bloco-rural-sn')
+        .classList.toggle('visivel', D.setor === 'AGR');
+      ir('s5b', 86, 'Perguntas Condicionais');
+      return;
+    }
+
+    // Lucro Presumido
+    if (D.regime === 'LP') {
+      if (D.setor === 'SAU') ir('s5f', 86, 'Perguntas Condicionais');
+      else ir('s5a', 86, 'Perguntas Condicionais');
+      return;
+    }
+
+    // Lucro Real
+    if (D.regime === 'LR') {
+      document.getElementById('bloco-combustivel')
+        .classList.toggle('visivel', D.setor === 'COM');
+      ir('s5cde', 86, 'Perguntas Condicionais');
+    }
+  }
+
+  // ── CÁLCULO FIEL AO RASCUNHO ──────────────────
+  function calcularTeses() {
+    const t = new Set();
+
+    // ── Pessoa Física ──
+    if (D.natureza === 'PF') {
+      t.add(3); t.add(13);
+      if (D.produtorRural === 'SIM') t.add(5);
+      return t;
+    }
+
+    // ── Simples Nacional ──
+    if (D.regime === 'SN') {
+      // Ativa base: 1, 7
+      t.add(1); t.add(7);
+      // P5B: confirma ou remove Tese 1
+      if (D.distribuiLucros === 'NAO') t.delete(1);
+      // Agronegócio + Produtor Rural: Tese 5
+      if (D.setor === 'AGR' && D.produtorRural === 'SIM') t.add(5);
+      return t;
+    }
+
+    // ── Lucro Presumido ──
+    if (D.regime === 'LP') {
+      // Ativa base: 2, 4, 6, 18
+      t.add(2); t.add(4); t.add(6); t.add(18);
+
+      // Etapa 3 — ajuste por setor
+      if (D.setor === 'COM' || D.setor === 'IND') {
+        // Rascunho: Presumido + Comércio/Indústria → Confirma 2, 4, 6
+        // Remove 18 (não aplicável)
+        t.delete(18);
+      } else if (D.setor === 'CON') {
+        // Rascunho: Remove 6 da base e Ativa 6 (construção) = mantém 6, remove 18
+        t.delete(18);
+        // Tese 6 permanece para construção civil
+      } else if (D.setor === 'SAU') {
+        // Confirma 2, 4; Ativa 18 se for clínica
+        t.delete(6);
+        if (D.clinica !== 'SIM') t.delete(18);
+      } else {
+        // AGR, SRV, OUT: Confirma 2, 4
+        t.delete(6); t.delete(18);
+      }
+
+      // P5A: faturamento confirma ou remove Tese 2
+      if (D.faturamento === 'ATE5') t.delete(2);
+
+      return t;
+    }
+
+    // ── Lucro Real ──
+    if (D.regime === 'LR') {
+      // Ativa base: 8, 9, 10, 11, 12, 13, 14, 15, 16
+      t.add(8); t.add(9); t.add(10); t.add(11);
+      t.add(12); t.add(13); t.add(14); t.add(15); t.add(16);
+
+      // Etapa 3 — ajuste por setor (fiel ao rascunho)
+      if (D.setor === 'COM') {
+        // Confirma 8,10,11,12 | Remove 9
+        t.delete(9); t.delete(15);
+      } else if (D.setor === 'IND') {
+        // Confirma 8,10,11,12 | Adiciona 20 | Remove 9
+        t.delete(9); t.delete(15);
+        t.add(20);
+      } else if (D.setor === 'CON') {
+        // Confirma 8,10,11,12 | Remove 6(não aplicável aqui),9
+        t.delete(9); t.delete(15);
+      } else if (D.setor === 'SRV') {
+        // Confirma 9,10,11,12 | Remove 8
+        t.delete(8); t.delete(15);
+      } else if (D.setor === 'AGR') {
+        // Confirma 8,10,11,12 | Adiciona 15,19 | Remove 9
+        t.delete(9);
+        t.add(19);
+        // 15 já está no set
+      } else {
+        // OUT: Confirma 8,10,11,12
+        t.delete(9); t.delete(15);
+      }
+
+      // Etapa 4 — condicionais
+      // P5C: operações interestaduais
+      if (D.interestaduais === 'NAO') { t.delete(10); t.delete(11); }
+
+      // P5D: P&D — Tese 16
+      if (D.pd === 'NAO') t.delete(16);
+
+      // P5E: combustíveis (apenas Comércio + LR)
+      if (D.setor === 'COM' && D.combustivel === 'SIM') t.add(17);
+
+      return t;
+    }
+
+    return t;
+  }
+
+  // ── LABELS PARA O SHEETS ──────────────────────
+  const LBL = {
+    natureza: { PF:'Pessoa Física', ME:'ME / EPP', MG:'Médio / Grande Porte' },
+    regime:   { SN:'Simples Nacional', LP:'Lucro Presumido', LR:'Lucro Real' },
+    setor:    { COM:'Comércio', IND:'Indústria', CON:'Construção Civil',
+                SRV:'Serviços', SAU:'Saúde', AGR:'Agronegócio', OUT:'Outro' },
+    fat:      { ATE5:'Até R$ 5M', ACIMA5:'Acima de R$ 5M' },
+    bool:     { SIM:'Sim', NAO:'Não', OCL:'Ocasionalmente', null:'—', undefined:'—' }
+  };
+
+  function lbl(obj, val) {
+    return (obj && val !== null && val !== undefined) ? (obj[val] || '—') : '—';
+  }
+
+  function temperatura() {
+    if (!D.insatisfacao) return 'N/A';
+    return D.insatisfacao >= 7 ? 'Hot Lead' : 'Warm Lead';
+  }
+
+  function potencial(n) {
+    return n >= 5 ? 'ALTO' : n >= 3 ? 'MÉDIO' : 'BAIXO';
+  }
+
+  
+    // ── VALIDAÇÃO FINAL ───────────────────────────
+  function validarFinal() {
+
+    if (D.regime === 'SN') {
+      if (!D.distribuiLucros) {
+        alert('Por favor, responda se a empresa distribui lucros.'); return false;
+      }
+      if (D.setor === 'AGR' && !D.produtorRural) {
+        alert('Por favor, responda a pergunta sobre produtor rural.'); return false;
+      }
+    }
+
+    if (D.regime === 'LP') {
+      if (!D.faturamento) {
+        alert('Por favor, selecione o faturamento.'); return false;
+      }
+      if (D.setor === 'SAU' && !D.clinica) {
+        alert('Por favor, responda a pergunta sobre clínica/consultório.'); return false;
+      }
+    }
+
+    if (D.regime === 'LR') {
+      if (!D.interestaduais) {
+        alert('Por favor, responda a pergunta sobre operações interestaduais.'); return false;
+      }
+      if (!D.pd) {
+        alert('Por favor, responda a pergunta sobre pesquisa e desenvolvimento.'); return false;
+      }
+      if (D.setor === 'COM' && !D.combustivel) {
+        alert('Por favor, responda a pergunta sobre distribuição de combustíveis.'); return false;
+      }
+    }
+
+    if (D.natureza === 'PF' && D.setor === 'AGR' && !D.produtorRural) {
+      alert('Por favor, responda a pergunta sobre produtor rural.'); return false;
+    }
+
+    return true;
+  }
+
+  // ── MONTAGEM DO PAYLOAD PARA O SHEETS ─────────
+  function montarPayload(teses, pot) {
+    const lista = [...teses].sort((a,b) => a-b)
+      .map(n => '#' + n + ' — ' + TESES[n]).join(' | ');
+
+    return {
+      nome:            D.nome,
+      whatsapp:        D.whatsapp,
+      email:           D.email || '—',
+      empresa:         D.empresa || '—',
+      natureza:        lbl(LBL.natureza, D.natureza),
+      insatisfacao:    D.insatisfacao ? D.insatisfacao + '/10' : '—',
+      temperatura:     temperatura(),
+      regime:          lbl(LBL.regime, D.regime),
+      setor:           lbl(LBL.setor, D.setor),
+      faturamento:     lbl(LBL.fat, D.faturamento),
+      distribuiLucros: lbl(LBL.bool, D.distribuiLucros),
+      produtorRural:   lbl(LBL.bool, D.produtorRural),
+      interestaduais:  lbl(LBL.bool, D.interestaduais),
+      pd:              lbl(LBL.bool, D.pd),
+      combustivel:     lbl(LBL.bool, D.combustivel),
+      clinica:         lbl(LBL.bool, D.clinica),
+      teses:           lista,
+      potencial:       pot
+    };
+  }
+
+  // ── ENVIO PRINCIPAL ───────────────────────────
+  function enviar() {
+    if (!validarFinal()) return;
+
+    const teses   = calcularTeses();
+    const pot     = potencial(teses.size);
+    const payload = montarPayload(teses, pot);
+
+    // Exibe loading
+    document.getElementById('loading').classList.add('ativo');
+
+    // Envia para o Google Sheets via fetch com no-cors
+    // (Apps Script não retorna CORS, mas os dados chegam normalmente)
+    fetch(ENDPOINT, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    })
+    .then(() => {
+      document.getElementById('loading').classList.remove('ativo');
+      mostrarTela('tela-encerramento');
+    })
+    .catch(() => {
+      // Mesmo em caso de erro de rede, mostra encerramento
+      // (o Apps Script com no-cors sempre retorna opaque response)
+      document.getElementById('loading').classList.remove('ativo');
+      mostrarTela('tela-encerramento');
+    });
+  }
+
+  // ── REINICIAR ─────────────────────────────────
+  function reiniciar() {
+    // Limpa estado
+    Object.keys(D).forEach(k => D[k] = null);
+    D.nome = ''; D.whatsapp = ''; D.email = ''; D.empresa = '';
+
+    // Limpa inputs de texto
+    ['f-nome','f-wpp','f-email','f-empresa'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
+    // Limpa erros
+    document.querySelectorAll('.field-input').forEach(el => el.classList.remove('erro'));
+    document.querySelectorAll('.field-error').forEach(el => el.classList.remove('visivel'));
+
+    // Limpa seleções de opções
+    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('sel'));
+
+    // Limpa escala
+    document.querySelectorAll('.scale-btn')
+      .forEach(b => b.classList.remove('sl','sw','sh'));
+
+    // Oculta blocos condicionais
+    ['bloco-rural-sn','bloco-combustivel'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('visivel');
+    });
+
+    // Volta para tela inicial
+    mostrarTela('tela-boas-vindas');
+  }
+
+</script>
+</body>
+</html>
