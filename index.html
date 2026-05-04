@@ -4,6 +4,28 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Diagnóstico de Recuperação Tributária</title>
+
+  <!-- ══════════════════════════════════
+       META PIXEL — 2793149614355878
+  ══════════════════════════════════ -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '2793149614355878');
+    fbq('track', 'PageView');
+  </script>
+  <noscript>
+    <img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=2793149614355878&ev=PageView&noscript=1"/>
+  </noscript>
+  <!-- ══ FIM DO PIXEL ══ -->
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -29,7 +51,6 @@
       min-height: 100vh;
     }
 
-    /* ══ TELAS ══ */
     .tela { display: none; }
     .tela.ativa {
       display: flex;
@@ -236,7 +257,6 @@
       border-top: 4px solid var(--accent);
     }
 
-    /* ══ STEPS ══ */
     .step { display: none; }
     .step.ativo {
       display: block;
@@ -272,7 +292,6 @@
       line-height: 1.55;
     }
 
-    /* ══ INPUTS ══ */
     .input-group {
       display: flex;
       flex-direction: column;
@@ -318,7 +337,6 @@
 
     .field-error.visivel { display: block; }
 
-    /* ══ OPÇÕES ══ */
     .options { display: flex; flex-direction: column; gap: 11px; }
 
     .option-btn {
@@ -371,7 +389,6 @@
       display: block;
     }
 
-    /* ══ ESCALA ══ */
     .scale-wrap { display: flex; flex-direction: column; gap: 12px; }
     .scale-buttons { display: flex; gap: 7px; flex-wrap: wrap; }
 
@@ -400,7 +417,6 @@
       color: var(--muted);
     }
 
-    /* ══ BLOCOS CONDICIONAIS ══ */
     .bloco-cond { display: none; }
     .bloco-cond.visivel { display: block; }
 
@@ -414,7 +430,6 @@
       margin-bottom: 6px;
     }
 
-    /* ══ NAVEGAÇÃO ══ */
     .nav-row {
       display: flex;
       justify-content: flex-end;
@@ -449,7 +464,6 @@
       color: var(--muted);
     }
 
-    /* ══ DESQUALIFICADO ══ */
     .disc-inner { text-align: center; padding: 20px 0; }
     .disc-icon { font-size: 2.8rem; margin-bottom: 16px; }
 
@@ -477,7 +491,6 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
-
     #loading p { color: rgba(255,255,255,0.68); font-size: 0.9rem; }
 
     /* ══ ENCERRAMENTO ══ */
@@ -576,7 +589,6 @@
       box-shadow: 0 14px 38px rgba(201,168,76,0.52);
     }
 
-    /* ══ RESPONSIVO ══ */
     @media (max-width: 560px) {
       .card { padding: 26px 18px; }
       .scale-btn { width: 38px; height: 38px; font-size: 0.82rem; }
@@ -648,7 +660,7 @@
       <div class="input-group">
         <label for="f-wpp">WhatsApp<span class="req"> *</span></label>
         <input class="field-input" type="tel" id="f-wpp" placeholder="(11) 99999-9999" autocomplete="tel"/>
-        <span class="field-error" id="e-wpp">Por favor, informe um número de WhatsApp válido (mínimo 10 dígitos).</span>
+        <span class="field-error" id="e-wpp">Por favor, informe um número de WhatsApp válido.</span>
       </div>
 
       <div class="input-group">
@@ -773,7 +785,7 @@
       </div>
     </div>
 
-    <!-- STEP 5A — Faturamento (LP, exceto Saúde) -->
+    <!-- STEP 5A — Faturamento (LP exceto Saúde) -->
     <div class="step" id="s5a">
       <div class="step-tag">Etapa 6 · Perguntas Condicionais</div>
       <h2>Qual foi o faturamento bruto aproximado da empresa no último ano?</h2>
@@ -964,9 +976,6 @@
   </div>
 </div>
 
-<!-- ════════════════════════════
-     JAVASCRIPT
-════════════════════════════ -->
 <script>
   // ── ENDPOINT ──────────────────────────────────
   const ENDPOINT = 'https://script.google.com/macros/s/AKfycbwlKZExSgaiavIg5Ily55kaZzJRGKKppshJK8azRDCKfrm4nOeWB2UslZy9jBxJVAwLKg/exec';
@@ -1004,6 +1013,14 @@
     20:'Créditos Escriturais de IPI — Indústria'
   };
 
+  // ── PIXEL — HELPER ────────────────────────────
+  function pixel(evento, params) {
+    if (typeof fbq === 'function') {
+      if (params) fbq('track', evento, params);
+      else fbq('track', evento);
+    }
+  }
+
   // ── CONTROLE DE TELAS ─────────────────────────
   function mostrarTela(id) {
     document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
@@ -1012,6 +1029,8 @@
   }
 
   function iniciar() {
+    // PIXEL: usuário clicou em Iniciar Diagnóstico
+    pixel('ViewContent', { content_name: 'Diagnóstico Tributário', content_category: 'Funil' });
     mostrarTela('tela-formulario');
     ir('s0', 10, 'Identificação');
   }
@@ -1053,7 +1072,6 @@
     btn.classList.add('sel');
     D[campo] = btn.dataset.val;
 
-    // Bloco rural no SN (Agronegócio)
     if (campo === 'setor') {
       const rural = document.getElementById('bloco-rural-sn');
       if (rural) rural.classList.toggle('visivel', D.setor === 'AGR');
@@ -1079,15 +1097,18 @@
       setErro('f-wpp','e-wpp',true); ok=false;
     } else setErro('f-wpp','e-wpp',false);
     if (!ok) return;
-    D.nome = nome;
+    D.nome    = nome;
     D.whatsapp = wpp;
-    D.email = document.getElementById('f-email').value.trim();
+    D.email   = document.getElementById('f-email').value.trim();
+
+    // PIXEL: dados de contato preenchidos — início real do funil
+    pixel('InitiateCheckout', { content_name: 'Funil Tributário — Etapa Contato' });
+
     ir('s1', 22, 'Qualificação Inicial');
   }
 
   function avancarS1() {
     if (!D.natureza) { alert('Por favor, selecione uma opção.'); return; }
-    // Pessoa Física pula empresa, insatisfação e regime — vai direto ao setor
     if (D.natureza === 'PF') {
       ir('s4', 70, 'Setor de Atuação');
     } else {
@@ -1106,6 +1127,8 @@
   function avancarS2() {
     if (!D.insatisfacao) { alert('Por favor, selecione um valor na escala.'); return; }
     if (D.insatisfacao <= 3) {
+      // PIXEL: lead desqualificado — ainda registra como interesse baixo
+      pixel('CustomEvent', { content_name: 'Lead Desqualificado', value: D.insatisfacao });
       ir('s-disc', 30, 'Encerrado');
     } else {
       ir('s3', 56, 'Regime Tributário');
@@ -1125,14 +1148,12 @@
   function avancarS4() {
     if (!D.setor) { alert('Por favor, selecione o setor de atuação.'); return; }
 
-    // Pessoa Física
     if (D.natureza === 'PF') {
       if (D.setor === 'AGR') ir('s5g', 86, 'Perguntas Condicionais');
-      else enviar(); // PF não-agronegócio finaliza direto
+      else enviar();
       return;
     }
 
-    // Simples Nacional
     if (D.regime === 'SN') {
       document.getElementById('bloco-rural-sn')
         .classList.toggle('visivel', D.setor === 'AGR');
@@ -1140,14 +1161,12 @@
       return;
     }
 
-    // Lucro Presumido
     if (D.regime === 'LP') {
       if (D.setor === 'SAU') ir('s5f', 86, 'Perguntas Condicionais');
       else ir('s5a', 86, 'Perguntas Condicionais');
       return;
     }
 
-    // Lucro Real
     if (D.regime === 'LR') {
       document.getElementById('bloco-combustivel')
         .classList.toggle('visivel', D.setor === 'COM');
@@ -1155,115 +1174,77 @@
     }
   }
 
-  // ── CÁLCULO FIEL AO RASCUNHO ──────────────────
+  // ── CÁLCULO DE TESES ──────────────────────────
   function calcularTeses() {
     const t = new Set();
 
-    // ── Pessoa Física ──
     if (D.natureza === 'PF') {
       t.add(3); t.add(13);
       if (D.produtorRural === 'SIM') t.add(5);
       return t;
     }
 
-    // ── Simples Nacional ──
     if (D.regime === 'SN') {
-      // Ativa base: 1, 7
       t.add(1); t.add(7);
-      // P5B: confirma ou remove Tese 1
       if (D.distribuiLucros === 'NAO') t.delete(1);
-      // Agronegócio + Produtor Rural: Tese 5
       if (D.setor === 'AGR' && D.produtorRural === 'SIM') t.add(5);
       return t;
     }
 
-    // ── Lucro Presumido ──
     if (D.regime === 'LP') {
-      // Ativa base: 2, 4, 6, 18
       t.add(2); t.add(4); t.add(6); t.add(18);
-
-      // Etapa 3 — ajuste por setor
       if (D.setor === 'COM' || D.setor === 'IND') {
-        // Rascunho: Presumido + Comércio/Indústria → Confirma 2, 4, 6
-        // Remove 18 (não aplicável)
         t.delete(18);
       } else if (D.setor === 'CON') {
-        // Rascunho: Remove 6 da base e Ativa 6 (construção) = mantém 6, remove 18
         t.delete(18);
-        // Tese 6 permanece para construção civil
       } else if (D.setor === 'SAU') {
-        // Confirma 2, 4; Ativa 18 se for clínica
         t.delete(6);
         if (D.clinica !== 'SIM') t.delete(18);
       } else {
-        // AGR, SRV, OUT: Confirma 2, 4
         t.delete(6); t.delete(18);
       }
-
-      // P5A: faturamento confirma ou remove Tese 2
       if (D.faturamento === 'ATE5') t.delete(2);
-
       return t;
     }
 
-    // ── Lucro Real ──
     if (D.regime === 'LR') {
-      // Ativa base: 8, 9, 10, 11, 12, 13, 14, 15, 16
       t.add(8); t.add(9); t.add(10); t.add(11);
       t.add(12); t.add(13); t.add(14); t.add(15); t.add(16);
 
-      // Etapa 3 — ajuste por setor (fiel ao rascunho)
       if (D.setor === 'COM') {
-        // Confirma 8,10,11,12 | Remove 9
         t.delete(9); t.delete(15);
       } else if (D.setor === 'IND') {
-        // Confirma 8,10,11,12 | Adiciona 20 | Remove 9
-        t.delete(9); t.delete(15);
-        t.add(20);
+        t.delete(9); t.delete(15); t.add(20);
       } else if (D.setor === 'CON') {
-        // Confirma 8,10,11,12 | Remove 6(não aplicável aqui),9
         t.delete(9); t.delete(15);
       } else if (D.setor === 'SRV') {
-        // Confirma 9,10,11,12 | Remove 8
         t.delete(8); t.delete(15);
       } else if (D.setor === 'AGR') {
-        // Confirma 8,10,11,12 | Adiciona 15,19 | Remove 9
-        t.delete(9);
-        t.add(19);
-        // 15 já está no set
+        t.delete(9); t.add(19);
       } else {
-        // OUT: Confirma 8,10,11,12
         t.delete(9); t.delete(15);
       }
 
-      // Etapa 4 — condicionais
-      // P5C: operações interestaduais
       if (D.interestaduais === 'NAO') { t.delete(10); t.delete(11); }
-
-      // P5D: P&D — Tese 16
       if (D.pd === 'NAO') t.delete(16);
-
-      // P5E: combustíveis (apenas Comércio + LR)
       if (D.setor === 'COM' && D.combustivel === 'SIM') t.add(17);
-
-      return t;
     }
 
     return t;
   }
 
-  // ── LABELS PARA O SHEETS ──────────────────────
+  // ── LABELS ────────────────────────────────────
   const LBL = {
     natureza: { PF:'Pessoa Física', ME:'ME / EPP', MG:'Médio / Grande Porte' },
     regime:   { SN:'Simples Nacional', LP:'Lucro Presumido', LR:'Lucro Real' },
     setor:    { COM:'Comércio', IND:'Indústria', CON:'Construção Civil',
                 SRV:'Serviços', SAU:'Saúde', AGR:'Agronegócio', OUT:'Outro' },
     fat:      { ATE5:'Até R$ 5M', ACIMA5:'Acima de R$ 5M' },
-    bool:     { SIM:'Sim', NAO:'Não', OCL:'Ocasionalmente', null:'—', undefined:'—' }
+    bool:     { SIM:'Sim', NAO:'Não', OCL:'Ocasionalmente' }
   };
 
   function lbl(obj, val) {
-    return (obj && val !== null && val !== undefined) ? (obj[val] || '—') : '—';
+    return (obj && val) ? (obj[val] || '—') : '—';
   }
 
   function temperatura() {
@@ -1275,10 +1256,8 @@
     return n >= 5 ? 'ALTO' : n >= 3 ? 'MÉDIO' : 'BAIXO';
   }
 
-  
-    // ── VALIDAÇÃO FINAL ───────────────────────────
+  // ── VALIDAÇÃO FINAL ───────────────────────────
   function validarFinal() {
-
     if (D.regime === 'SN') {
       if (!D.distribuiLucros) {
         alert('Por favor, responda se a empresa distribui lucros.'); return false;
@@ -1287,7 +1266,6 @@
         alert('Por favor, responda a pergunta sobre produtor rural.'); return false;
       }
     }
-
     if (D.regime === 'LP') {
       if (!D.faturamento) {
         alert('Por favor, selecione o faturamento.'); return false;
@@ -1296,7 +1274,6 @@
         alert('Por favor, responda a pergunta sobre clínica/consultório.'); return false;
       }
     }
-
     if (D.regime === 'LR') {
       if (!D.interestaduais) {
         alert('Por favor, responda a pergunta sobre operações interestaduais.'); return false;
@@ -1308,19 +1285,16 @@
         alert('Por favor, responda a pergunta sobre distribuição de combustíveis.'); return false;
       }
     }
-
     if (D.natureza === 'PF' && D.setor === 'AGR' && !D.produtorRural) {
       alert('Por favor, responda a pergunta sobre produtor rural.'); return false;
     }
-
     return true;
   }
 
-  // ── MONTAGEM DO PAYLOAD PARA O SHEETS ─────────
+    // ── PAYLOAD ───────────────────────────────────
   function montarPayload(teses, pot) {
     const lista = [...teses].sort((a,b) => a-b)
       .map(n => '#' + n + ' — ' + TESES[n]).join(' | ');
-
     return {
       nome:            D.nome,
       whatsapp:        D.whatsapp,
@@ -1351,11 +1325,18 @@
     const pot     = potencial(teses.size);
     const payload = montarPayload(teses, pot);
 
+    // PIXEL: Lead qualificado — evento mais importante para otimização
+    pixel('Lead', {
+      content_name:     'Diagnóstico Tributário Concluído',
+      content_category: D.regime ? lbl(LBL.regime, D.regime) : 'Pessoa Física',
+      value:            teses.size,
+      currency:         'BRL',
+      status:           pot
+    });
+
     // Exibe loading
     document.getElementById('loading').classList.add('ativo');
 
-    // Envia para o Google Sheets via fetch com no-cors
-    // (Apps Script não retorna CORS, mas os dados chegam normalmente)
     fetch(ENDPOINT, {
       method:  'POST',
       mode:    'no-cors',
@@ -1367,8 +1348,6 @@
       mostrarTela('tela-encerramento');
     })
     .catch(() => {
-      // Mesmo em caso de erro de rede, mostra encerramento
-      // (o Apps Script com no-cors sempre retorna opaque response)
       document.getElementById('loading').classList.remove('ativo');
       mostrarTela('tela-encerramento');
     });
@@ -1380,18 +1359,21 @@
     Object.keys(D).forEach(k => D[k] = null);
     D.nome = ''; D.whatsapp = ''; D.email = ''; D.empresa = '';
 
-    // Limpa inputs de texto
+    // Limpa campos de texto
     ['f-nome','f-wpp','f-email','f-empresa'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
 
     // Limpa erros
-    document.querySelectorAll('.field-input').forEach(el => el.classList.remove('erro'));
-    document.querySelectorAll('.field-error').forEach(el => el.classList.remove('visivel'));
+    document.querySelectorAll('.field-input')
+      .forEach(el => el.classList.remove('erro'));
+    document.querySelectorAll('.field-error')
+      .forEach(el => el.classList.remove('visivel'));
 
-    // Limpa seleções de opções
-    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('sel'));
+    // Limpa seleções
+    document.querySelectorAll('.option-btn')
+      .forEach(b => b.classList.remove('sel'));
 
     // Limpa escala
     document.querySelectorAll('.scale-btn')
